@@ -1,0 +1,22 @@
+stages:
+  load_and_canonicalize:
+    cmd: python ml/src/factorypulse_ml/data/loaders.py data/raw data/interim
+    deps:
+      - data/raw/train_FD001.txt
+      - ml/src/factorypulse_ml/data/loaders.py
+      - ml/src/factorypulse_ml/data/canonical.py
+    outs:
+      - data/interim/cmapss_canonical.parquet
+
+  split:
+    cmd: python ml/src/factorypulse_ml/data/splits.py data/interim data/processed
+    deps:
+      - data/interim/cmapss_canonical.parquet
+      - ml/src/factorypulse_ml/data/splits.py
+    params:
+      - data.train_ratio
+      - data.val_ratio
+    outs:
+      - data/processed/cmapss_train.parquet
+      - data/processed/cmapss_val.parquet
+      - data/processed/cmapss_test.parquet

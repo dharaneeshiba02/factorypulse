@@ -1,0 +1,26 @@
+name: Train & Evaluate
+
+on:
+  schedule:
+    - cron: '0 0 * * *' # Nightly
+  workflow_dispatch:
+
+jobs:
+  train:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.10"
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -e ml/
+        pip install dvc[s3]
+    - name: Run DVC Pipeline
+      run: |
+        dvc pull
+        dvc repro
+        # MLflow logging would happen inside the python scripts
