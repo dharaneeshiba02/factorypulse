@@ -14,8 +14,8 @@ def load_cmapss(raw_dir: str) -> pd.DataFrame:
     Assumes `train_FD001.txt` is in raw_dir.
     """
     raw_path = Path(raw_dir) / "train_FD001.txt"
-    if not raw_path.exists():
-        logger.warning(f"C-MAPSS data not found at {raw_path}. Returning empty DF.")
+    if not raw_path.exists() or raw_path.stat().st_size == 0:
+        logger.warning(f"C-MAPSS data missing or empty at {raw_path}. Returning empty DF.")
         return pd.DataFrame(columns=['time', 'machine_id', 'sensor', 'value', 'quality'])
         
     # Standard column names for C-MAPSS

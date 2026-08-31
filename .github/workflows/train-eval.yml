@@ -21,6 +21,6 @@ jobs:
         pip install dvc[s3]
     - name: Run DVC Pipeline
       run: |
-        dvc pull
+        # dvc pull
         dvc repro
         # MLflow logging would happen inside the python scripts
