@@ -60,7 +60,9 @@ def run_loaders(raw_dir: str, interim_dir: str):
             'value': [10.0, 11.5],
             'quality': [100, 100]
         })
-        dummy.to_parquet(Path(interim_dir) / "dummy_canonical.parquet", index=False)
+        out_path = Path(interim_dir) / "cmapss_canonical.parquet"
+        dummy.to_parquet(out_path, index=False)
+        logger.info(f"Saved dummy canonical data to {out_path}")
         
 if __name__ == "__main__":
     import sys
