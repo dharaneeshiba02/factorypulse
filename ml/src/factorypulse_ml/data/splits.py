@@ -47,12 +47,10 @@ def split_data(interim_dir: str, processed_dir: str, train_ratio: float = 0.7, v
         
         dataset_name = p.stem.replace("_canonical", "")
         
-        if not train_df.empty:
-            train_df.to_parquet(Path(processed_dir) / f"{dataset_name}_train.parquet", index=False)
-        if not val_df.empty:
-            val_df.to_parquet(Path(processed_dir) / f"{dataset_name}_val.parquet", index=False)
-        if not test_df.empty:
-            test_df.to_parquet(Path(processed_dir) / f"{dataset_name}_test.parquet", index=False)
+        # Always write all three split files — DVC requires declared outputs to exist
+        train_df.to_parquet(Path(processed_dir) / f"{dataset_name}_train.parquet", index=False)
+        val_df.to_parquet(Path(processed_dir) / f"{dataset_name}_val.parquet", index=False)
+        test_df.to_parquet(Path(processed_dir) / f"{dataset_name}_test.parquet", index=False)
             
         logger.info(f"Split {dataset_name}: Train={len(train_machines)}, Val={len(val_machines)}, Test={len(test_machines)} machines.")
 

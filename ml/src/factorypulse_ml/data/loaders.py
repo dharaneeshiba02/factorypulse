@@ -51,15 +51,19 @@ def run_loaders(raw_dir: str, interim_dir: str):
         df_cmapss.to_parquet(out_path, index=False)
         logger.info(f"Saved C-MAPSS canonical data to {out_path}")
     else:
-        # Create dummy data for now so the pipeline can proceed without actual data
+        # Create dummy data with enough machines for a 3-way split
         logger.info("Creating dummy dataset since real data is missing...")
-        dummy = pd.DataFrame({
-            'time': [datetime(2025,1,1), datetime(2025,1,2)],
-            'machine_id': ['DUMMY_1', 'DUMMY_1'],
-            'sensor': ['sensor_1', 'sensor_1'],
-            'value': [10.0, 11.5],
-            'quality': [100, 100]
-        })
+        rows = []
+        for i in range(1, 5):  # 4 machines → train gets 2, val gets 1, test gets 1
+            for j in range(3):  # 3 readings per machine
+                rows.append({
+                    'time': datetime(2025, 1, 1) + timedelta(hours=j),
+                    'machine_id': f'DUMMY_{i}',
+                    'sensor': 'sensor_1',
+                    'value': 10.0 + i + j * 0.5,
+                    'quality': 100,
+                })
+        dummy = pd.DataFrame(rows)
         out_path = Path(interim_dir) / "cmapss_canonical.parquet"
         dummy.to_parquet(out_path, index=False)
         logger.info(f"Saved dummy canonical data to {out_path}")
