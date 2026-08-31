@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "factorypulse-ingestion"
+version = "0.1.0"
+description = "Telemetry ingestion service for FactoryPulse"
+requires-python = ">=3.9"
+dependencies = [
+    "fastapi>=0.104.0",
+    "uvicorn[standard]>=0.24.0",
+    "asyncpg>=0.29.0",
+    "paho-mqtt>=1.6.1",
+    "pydantic>=2.4.0",
+    "pydantic-settings>=2.0.0",
+    "redis>=5.0.0",
+    "orjson>=3.9.0",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]

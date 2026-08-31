@@ -20,3 +20,15 @@ stages:
       - data/processed/cmapss_train.parquet
       - data/processed/cmapss_val.parquet
       - data/processed/cmapss_test.parquet
+
+  featurize:
+    cmd: python ml/src/factorypulse_ml/features/pipeline.py data/processed data/featured
+    deps:
+      - data/processed/cmapss_train.parquet
+      - data/processed/cmapss_val.parquet
+      - data/processed/cmapss_test.parquet
+      - ml/src/factorypulse_ml/features/
+    outs:
+      - data/featured/cmapss_featured_train.parquet
+      - data/featured/cmapss_featured_val.parquet
+      - data/featured/cmapss_featured_test.parquet
