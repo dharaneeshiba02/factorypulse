@@ -44,6 +44,8 @@ and reproducible project foundation for the FactoryPulse platform.
       to `.gitignore`.
 - [x] Create the service, shared ML, data, script, configuration, and test
       directory scaffolds.
+- [x] Add the source files and requested placeholder scaffold from the M1
+      implementation PDF to the repository.
 - [x] Document the system, service catalogue, datasets, setup, and milestone
       roadmap in `README.md`.
 - [x] Document the architecture data flow and accepted TimescaleDB and copilot
