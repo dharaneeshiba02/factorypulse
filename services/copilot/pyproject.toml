@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools==75.6.0", "wheel==0.45.1"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "factorypulse-copilot"
+version = "0.1.0"
+description = "FactoryPulse maintenance copilot and document retrieval service"
+requires-python = ">=3.10,<3.11"
+dependencies = [
+    "fastapi==0.115.6",
+    "uvicorn[standard]==0.34.0",
+    "pydantic==2.10.4",
+    "pydantic-settings==2.7.1",
+    "httpx==0.28.1",
+    "langgraph==0.2.60",
+    "langchain-core==0.3.28",
+    "qdrant-client==1.12.1",
+    "sentence-transformers==3.3.1",
+    "rank-bm25==0.2.2",
+    "redis==5.2.1",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]

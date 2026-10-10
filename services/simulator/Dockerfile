@@ -1,12 +1,13 @@
 FROM python:3.10-slim
 
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1
+
 WORKDIR /app
+COPY pyproject.toml ./
+COPY src/ ./src/
+RUN python -m pip install --no-cache-dir .
+ENV PYTHONPATH=/app/src
 
-# Install dependencies first for layer caching
-COPY pyproject.toml .
-RUN pip install -e .
-
-# Copy source code
-COPY src/ /app/src/
-
-CMD ["python", "src/simulator/main.py"]
+CMD ["python", "-m", "simulator.main"]

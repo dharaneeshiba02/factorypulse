@@ -1,0 +1,51 @@
+schema: '2.0'
+stages:
+  load_and_canonicalize:
+    cmd: python ml/src/factorypulse_ml/data/loaders.py data/raw data/interim
+    deps:
+    - path: data/raw/train_FD001.txt
+      hash: md5
+      md5: f328286e9832c3ceef49554f1b3726b5
+      size: 5068415
+    - path: ml/src/factorypulse_ml/data/canonical.py
+      hash: md5
+      md5: 4575f7ca2136974644fc6607ee6af9d6
+      size: 1278
+    - path: ml/src/factorypulse_ml/data/loaders.py
+      hash: md5
+      md5: e8e6ac99df4863db77c4ddbfe61021a5
+      size: 3131
+    outs:
+    - path: data/interim/cmapss_canonical.parquet
+      hash: md5
+      md5: 20610088fae6b935078b3d89cd3b86f0
+      size: 3118285
+  split:
+    cmd: python ml/src/factorypulse_ml/data/splits.py data/interim 
+      data/processed
+    deps:
+    - path: data/interim/cmapss_canonical.parquet
+      hash: md5
+      md5: 20610088fae6b935078b3d89cd3b86f0
+      size: 3118285
+    - path: ml/src/factorypulse_ml/data/splits.py
+      hash: md5
+      md5: 9fe6ead83f976ca872ac2798521eb316
+      size: 2327
+    params:
+      params.yaml:
+        data.train_ratio: 0.7
+        data.val_ratio: 0.15
+    outs:
+    - path: data/processed/cmapss_test.parquet
+      hash: md5
+      md5: f7d6ca5cf6d96092da738478e24255c0
+      size: 540333
+    - path: data/processed/cmapss_train.parquet
+      hash: md5
+      md5: e0498912f2efba3409fed8545a7771c9
+      size: 2354872
+    - path: data/processed/cmapss_val.parquet
+      hash: md5
+      md5: a8f238860f62007243e1783ecb22cab2
+      size: 564863

@@ -49,12 +49,38 @@ dmypy.json
 
 # Ruff / black
 .ruff_cache/
+.pytest_cache/
+.coverage
+coverage.xml
+htmlcov/
+
+# Editors and operating systems
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
 
 # DVC
 /data/raw/*
+!/data/raw/*.dvc
+!/data/raw/*/
+/data/raw/*/**
+!/data/raw/*/.gitignore
 /data/interim/*
 /data/processed/*
+/data/featured/*
 !/data/raw/.gitkeep
 !/data/interim/.gitkeep
 !/data/processed/.gitkeep
+!/data/featured/.gitkeep
+!/data/interim/.gitignore
+!/data/processed/.gitignore
+!/data/featured/.gitignore
 .dvc/config.local
+.dvc-storage/
+
+# Logs and temporary output
+*.log
+/tmp/

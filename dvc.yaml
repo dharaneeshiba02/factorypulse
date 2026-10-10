@@ -32,3 +32,28 @@ stages:
       - data/featured/cmapss_featured_train.parquet
       - data/featured/cmapss_featured_val.parquet
       - data/featured/cmapss_featured_test.parquet
+
+  train_rul:
+    cmd: python ml/src/factorypulse_ml/training/train_rul.py data/featured
+    deps:
+      - data/featured/cmapss_featured_train.parquet
+      - data/featured/cmapss_featured_val.parquet
+      - ml/src/factorypulse_ml/models/rul_xgboost.py
+      - ml/src/factorypulse_ml/models/rul_transformer.py
+      - ml/src/factorypulse_ml/training/train_rul.py
+
+  train_anomaly:
+    cmd: python ml/src/factorypulse_ml/training/train_anomaly.py data/featured
+    deps:
+      - data/featured/cmapss_featured_train.parquet
+      - data/featured/cmapss_featured_val.parquet
+      - ml/src/factorypulse_ml/models/lstm_autoencoder.py
+      - ml/src/factorypulse_ml/training/train_anomaly.py
+
+  train_failure:
+    cmd: python ml/src/factorypulse_ml/training/train_failure.py data/featured
+    deps:
+      - data/featured/cmapss_featured_train.parquet
+      - data/featured/cmapss_featured_val.parquet
+      - ml/src/factorypulse_ml/models/failure_lgbm.py
+      - ml/src/factorypulse_ml/training/train_failure.py
