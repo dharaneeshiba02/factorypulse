@@ -1,15 +1,18 @@
 """Ingestion service entrypoint — starts FastAPI + MQTT consumer."""
 import asyncio
+import json
 import logging
 from contextlib import asynccontextmanager
 
 import uvicorn
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
 
 from ingestion.config import config
 from ingestion.writer import BatchWriter
 from ingestion.mqtt_consumer import MQTTConsumer
-from ingestion.api.routes import router, set_writer
+from ingestion.api.routes import router, set_mqtt_consumer, set_writer
 
 logging.basicConfig(
     level=logging.INFO,
@@ -28,11 +31,14 @@ async def lifespan(app: FastAPI):
     loop = asyncio.get_running_loop()
     consumer = MQTTConsumer(writer, loop)
     consumer.start()
+    set_mqtt_consumer(consumer)
+    app.state.writer = writer
+    app.state.mqtt_consumer = consumer
 
     logger.info("Ingestion service ready.")
     yield
 
-    consumer.stop()
+    await consumer.stop()
     await writer.stop()
     logger.info("Ingestion service shut down.")
 
@@ -43,6 +49,23 @@ app = FastAPI(
     lifespan=lifespan,
 )
 app.include_router(router)
+
+
+@app.exception_handler(RequestValidationError)
+async def rejected_http_payload(request: Request, error: RequestValidationError):
+    """Retain schema-invalid HTTP payloads in the dead-letter table."""
+    writer = getattr(request.app.state, "writer", None)
+    raw = await request.body()
+    try:
+        payload = json.loads(raw.decode("utf-8"))
+    except (UnicodeDecodeError, json.JSONDecodeError):
+        payload = {"raw": raw.decode("utf-8", errors="replace")}
+    if writer is not None:
+        await writer.record_dead_letter(payload, "schema", str(error.errors()[:5]))
+    return JSONResponse(
+        status_code=422,
+        content={"detail": str(error.errors()[:5])},
+    )
 
 
 def main():

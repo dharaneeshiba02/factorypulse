@@ -1,6 +1,14 @@
-FROM python:3.11-slim
+FROM python:3.10-slim
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1
+
 WORKDIR /app
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
-COPY src/ ./src/
-CMD ["python", "-m", "src.receiver"]
+COPY services/ingestion/pyproject.toml ./
+COPY services/ingestion/src/ ./src/
+COPY ml/src/ ./ml-src/
+RUN python -m pip install --no-cache-dir .
+ENV PYTHONPATH=/app/src:/app/ml-src
+
+CMD ["python", "-m", "ingestion.main"]

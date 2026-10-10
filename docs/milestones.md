@@ -10,7 +10,7 @@
 | Milestone | Focus                           |   Status    |
 | :-------- | :------------------------------ | :---------: |
 | **M1**    | Foundations and data engineering |  Complete  |
-| **M2**    | Ingestion and storage           | Not started |
+| **M2**    | Ingestion and storage           |  Complete  |
 | **M3**    | Core machine learning           | Not started |
 | **M4**    | Serving and alerting            | Not started |
 | **M5**    | GenAI maintenance copilot       | Not started |
@@ -34,6 +34,20 @@ and `.env` remains ignored by Git. The remaining DVC status entries are for
 later feature/training stages, outside M1.
 
 ## Milestones
+
+### M2 acceptance review
+
+**Result: Complete.** Compose configuration validated and the TimescaleDB
+compatibility migration completed against the existing local volume. The
+ingestion service built and reached readiness with database, Redis, and MQTT
+connected. A live HTTP batch stored eight readings and 224 derived features;
+an out-of-range temperature was rejected and recorded in the dead-letter table.
+The Redis feature snapshot returned rolling, trend, FFT band-energy, and
+spectral-kurtosis values. The corrected MQTT simulator replay stored 6,111
+readings and 171,108 feature rows with no replay validation rejects. The replay
+also verified automatic asset and sensor registration. These checks cover the
+M2 ingestion and online-feature path; model training, inference, and alerting
+remain later milestones.
 
 ### M1 - Architecture and project setup
 
@@ -88,26 +102,26 @@ seed script matches the documented demo inventory with seed records loaded.
 **Objective:** Validate and store telemetry reliably, then make consistent
 features available to batch training and online inference.
 
-- [ ] Define and validate telemetry schemas, units, physical ranges, and
+- [x] Define and validate telemetry schemas, units, physical ranges, and
       monotonic timestamps.
-- [ ] Implement HTTP batch ingestion and MQTT consumption with configurable
+- [x] Implement HTTP batch ingestion and MQTT consumption with configurable
       machine streams.
-- [ ] Persist valid readings to TimescaleDB hypertables using batched writes;
+- [x] Persist valid readings to TimescaleDB hypertables using batched writes;
       route rejected payloads and reason codes to a dead-letter table.
-- [ ] Add continuous aggregates, indexes, and retention policy for raw
+- [x] Add continuous aggregates, indexes, and retention policy for raw
       telemetry.
-- [ ] Implement rolling, spectral (FFT band energy and spectral kurtosis), and
+- [x] Implement rolling, spectral (FFT band energy and spectral kurtosis), and
       trend features with matching offline/online transforms.
-- [ ] Write windowed features to storage and cache online features in Redis with
+- [x] Write windowed features to storage and cache online features in Redis with
       expiry and database fallback.
-- [ ] Implement REST asset registry operations for machines, sensors, and
+- [x] Implement REST asset registry operations for machines, sensors, and
       machine classes.
-- [ ] Add health/readiness endpoints and service configuration for ingestion and
+- [x] Add health/readiness endpoints and service configuration for ingestion and
       data components.
 
-**Exit criteria:** Replayed readings are validated and persisted, invalid
-readings can be inspected in the dead-letter path, and the feature pipeline
-produces usable offline and online features.
+**Exit criteria: Met.** Replayed readings are validated and persisted, rejected
+readings can be inspected in the dead-letter path, and the shared feature
+transforms produce persisted and cached online features.
 
 ### M3 - Core machine learning
 
@@ -233,6 +247,7 @@ been evaluated and reported.
 
 | Date | Milestone | Update, decision, or blocker | Evidence / link |
 | :--- | :-------- | :--------------------------- | :-------------- |
+| 2026-10-10 | M2 | Completed ingestion, registry, telemetry storage, dead-lettering, feature persistence/cache, and health/readiness integration. | Compose config and migration succeeded; HTTP acceptance flow stored 8 readings/224 features and dead-lettered one invalid reading; MQTT replay stored 6,111 readings/171,108 features with zero replay rejects; `/api/v1/health` reported DB, Redis, and MQTT connected. |
 |      |           |                              |                 |
 
 ## Project completion

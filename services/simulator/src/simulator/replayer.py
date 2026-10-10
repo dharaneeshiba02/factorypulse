@@ -2,7 +2,7 @@ import pandas as pd
 import time
 import logging
 from pathlib import Path
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from simulator.transports import Transport
 from simulator.fault_injector import FaultInjector
 
@@ -64,12 +64,13 @@ class Replayer:
         for i in range(0, len(readings), batch_size):
             batch = readings[i:i+batch_size]
             
-            # Update timestamps to 'now' so it looks like live data
-            now_iso = datetime.now(timezone.utc).isoformat()
+            # Preserve strict per-stream ordering even when one batch contains
+            # multiple cycles for the same machine/sensor pair.
+            batch_time = datetime.now(timezone.utc)
             
             payload = []
-            for r in batch:
-                r['time'] = now_iso # replace original time
+            for offset, r in enumerate(batch):
+                r['time'] = (batch_time + timedelta(microseconds=offset)).isoformat()
                 if self.injector:
                     r = self.injector.inject(r)
                 payload.append(r)

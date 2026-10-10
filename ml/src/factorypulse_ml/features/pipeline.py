@@ -10,11 +10,7 @@ import logging
 from pathlib import Path
 
 import pandas as pd
-import numpy as np
-
-from factorypulse_ml.features.rolling import rolling_features
-from factorypulse_ml.features.trends import trend_features
-from factorypulse_ml.features.spectral import spectral_features
+from factorypulse_ml.features.transforms import transform_sensor_readings
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(name)s: %(message)s")
 logger = logging.getLogger(__name__)
@@ -45,26 +41,40 @@ def _pivot_sensors(df: pd.DataFrame) -> pd.DataFrame:
 
     This is necessary for models that expect a feature vector per time-step.
     """
-    # We need a unique row key: machine_id + time
-    # Keep one row per (machine_id, time), with sensor values as columns
-    id_cols = [c for c in df.columns if c not in ("sensor", "value")]
-    pivot = df.pivot_table(
-        index=["machine_id", "time"],
+    index = ["machine_id", "time"]
+    generated = [
+        name
+        for name in df.columns
+        if name not in {*index, "sensor", "value", "quality", "rul"}
+    ]
+    value_columns = ["value", *generated]
+    wide = df.pivot_table(
+        index=index,
         columns="sensor",
-        values="value",
+        values=value_columns,
         aggfunc="first",
     ).reset_index()
+    flattened = []
+    for column in wide.columns:
+        if not isinstance(column, tuple):
+            flattened.append(str(column))
+            continue
+        feature, sensor = column
+        if feature in index:
+            flattened.append(str(feature))
+        elif feature == "value":
+            flattened.append(str(sensor))
+        else:
+            flattened.append(f"{sensor}_{feature}")
+    wide.columns = flattened
 
-    # Flatten multi-level column names
-    pivot.columns = [
-        col if isinstance(col, str) else f"{col[0]}_{col[1]}" if col[1] else col[0]
-        for col in pivot.columns
-    ]
-
-    # Merge back the non-sensor columns (rul, quality, etc.)
-    meta = df.drop(columns=["sensor", "value"]).drop_duplicates(subset=["machine_id", "time"])
-    result = pivot.merge(meta, on=["machine_id", "time"], how="left")
-    return result
+    metadata_columns = [name for name in ("rul", "quality") if name in df.columns]
+    metadata = (
+        df.groupby(index, as_index=False)[metadata_columns].first()
+        if metadata_columns
+        else df[index].drop_duplicates()
+    )
+    return wide.merge(metadata, on=index, how="left")
 
 
 def run_feature_pipeline(processed_dir: str, featured_dir: str):
@@ -93,15 +103,14 @@ def run_feature_pipeline(processed_dir: str, featured_dir: str):
             # 1. Add RUL target
             df = _add_rul_target(df)
 
-            # 2. Compute rolling features (in long format)
-            df = rolling_features(df, windows=[5, 10, 20])
-
-            # 3. Compute trend features
-            df = trend_features(df, windows=[10, 20])
-
-            # Note: spectral features are expensive on large data,
-            # so we skip them for the full pipeline but they're available
-            # for targeted analysis.
+            # Apply the same rolling, trend, and spectral transforms used by
+            # online ingestion to avoid training/serving skew.
+            df = transform_sensor_readings(
+                df,
+                rolling_windows=[5, 10, 20],
+                trend_windows=[10, 20],
+                spectral_window=50,
+            )
 
             # 4. Pivot to wide format (one row per machine+timestep)
             df_wide = _pivot_sensors(df)
