@@ -1,98 +1,42 @@
-# FactoryPulse
+﻿# FactoryPulse - Industrial Equipment Intelligence Platform
 
-FactoryPulse is a predictive maintenance platform for industrial equipment. It
-combines telemetry ingestion, time-series storage, machine-learning models,
-alerting, and a maintenance copilot grounded in equipment documentation.
+Predictive maintenance platform that learns normal machine behavior, detects anomalies, predicts Remaining Useful Life (RUL), diagnoses faults, and generates work orders via an AI copilot grounded in plant documentation.
 
-## Project status
+## Quick Start
 
-The repository is organized around six delivery milestones. M1 establishes the
-architecture and local infrastructure; later milestones build the simulator,
-ingestion path, model training and serving, console, copilot, and operational
-hardening. See the [milestone roadmap](docs/milestones.md) for the current
-checklist.
+```bash
+cp .env.example .env # Add your LLM_API_KEY
+make demo # Launches everything
+```
 
-## Architecture at a glance
+## Services
 
-- **Simulator:** Replays public or prepared sensor data over MQTT or HTTP.
-- **Ingestion:** Validates telemetry and batches readings into TimescaleDB.
-- **Feature and ML pipeline:** Prepares data, computes features, trains models,
-  and tracks runs with DVC and MLflow.
-- **Inference and alerting:** Scores machine data, calculates health, and
-  creates prioritized alerts.
-- **Copilot:** Retrieves maintenance evidence and drafts cited work orders for
-  human review.
-- **Operations console:** Presents fleet health, machine details, alerts,
-  copilot conversations, and MLOps views.
+| Service | Port | Description |
+|-------------|------|------------------------------------------|
+| Console | 8501 | Streamlit dashboard |
+| Inference | 8001 | FastAPI model serving + shadow deployment |
+| Copilot | 8002 | LangGraph agent with 5 tools |
+| MLflow | 5000 | Experiment tracking & model registry |
+| TimescaleDB | 5432 | Telemetry + application data |
+| Redis | 6379 | Online feature cache |
+| Qdrant | 6333 | Maintenance manual vector store |
+| Mosquitto | 1883 | MQTT broker for sensor data |
 
-See [docs/architecture.md](docs/architecture.md) for the component flow and
-design decisions.
+## Datasets
 
-## Local development
+| Dataset | Source | ML Task |
+|--------------------|---------------------------|-------------------------------|
+| C-MAPSS (FD001-04) | NASA Prognostics | RUL prediction |
+| IMS Bearings | UC Irvine / NASA | Anomaly detection |
+| AI4I 2020 | UCI ML Repository | Failure-mode classification |
 
-Requirements: Docker Engine with the Compose plugin, Python 3.10 or newer, Git,
-and GNU Make (or an equivalent `make` command).
+## Milestones
 
-1. Copy `.env.example` to `.env` and set a local database password, then use the
-   same password in `POSTGRES_PASSWORD`, `DATABASE_URL`, and
-   `INGEST_DATABASE_URL`. Replace the demo-user password and authentication
-   secret as well.
-2. Install the seed and data-download helpers:
-   `python -m pip install -r scripts/requirements.txt`.
-3. Start the local infrastructure: `make up`.
-4. Populate demo machines, sensors, and users: `make seed`.
-
-The M1 Compose stack starts TimescaleDB, Redis, Qdrant, Mosquitto, and MLflow.
-Run `docker compose --profile demo run --rm simulator` to replay the processed
-dataset from `data/processed` through MQTT; the simulator image mounts that data
-read-only and connects to the Compose Mosquitto service. Compose volumes persist
-between `make down` and `make up`; `make clean` also preserves those volumes.
-
-To download datasets, run `make datasets`. The command downloads IMS and AI4I
-from their published sources. NASA's
-[C-MAPSS record](https://data.nasa.gov/dataset/c-mapss-aircraft-engine-simulator-data)
-currently reports that its archive is unavailable, so this repository includes
-`train_FD001.txt`; use `CMAPSS_URL` to provide an authorized archive URL when
-one is available. Use `make dvc-status` to inspect data-pipeline changes.
-Install the ML package with `python -m pip install -e ./ml` before running
-`make train`.
-
-After downloading the large IMS and AI4I archives, add them to DVC and upload
-them to the configured local remote with `dvc add data/raw/ims_bearings`,
-`dvc add data/raw/ai4i_2020`, and `dvc push`. The existing FD001 text file is
-kept in Git for the current pipeline checkout.
-
-## Data sources
-
-| Dataset           | Use                    | Source             |
-| :---------------- | :--------------------- | :----------------- |
-| NASA C-MAPSS      | Remaining useful life  | [NASA record][cm]  |
-| NASA IMS bearings | Bearing degradation    | [NASA record][ims] |
-| AI4I 2020         | Failure classification | [UCI record][ai4i] |
-
-[cm]: https://data.nasa.gov/dataset/c-mapss-aircraft-engine-simulator-data
-[ims]: https://data.nasa.gov/dataset/ims-bearings
-[ai4i]: https://doi.org/10.24432/C5HS5C
-
-Dataset files are large or separately licensed; use DVC for downloaded data
-artifacts while Git tracks code and DVC metadata. Review each source's terms
-before redistribution.
-
-## Useful commands
-
-| Command         | Action                                 |
-| :-------------- | :------------------------------------- |
-| `make up`       | Start local infrastructure.            |
-| `make down`     | Stop containers and preserve volumes.  |
-| `make seed`     | Seed six assets, sensors, and users.   |
-| `make datasets` | Download available public datasets.    |
-| `make train`    | Run the DVC pipeline.                  |
-| `make lint`     | Run Ruff checks.                       |
-| `make clean`    | Stop Compose without deleting volumes. |
-
-## Security notes
-
-The included environment template is for local development. Keep `.env` out of
-Git, use unique local passwords, and do not expose the development MQTT broker,
-database, or vector store to an untrusted network. Production authentication,
-TLS, secret storage, and broker access controls are deployment requirements.
+| Milestone | Scope |
+|-----------|-------------------------------------------------|
+| M1 | Architecture, repo, Docker Compose, DB schema |
+| M2 | Simulator, ingestion, feature pipeline |
+| M3 | ML models (anomaly, RUL, classifier) |
+| M4 | Inference service, alerts, health scoring |
+| M5 | GenAI copilot, RAG, agentic workflow |
+| M6 | Console, deployment, drift monitoring |

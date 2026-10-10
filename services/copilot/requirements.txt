@@ -1,0 +1,10 @@
+fastapi==0.109.0
+uvicorn==0.27.0
+langgraph==0.0.40
+langchain-core==0.1.30
+qdrant-client==1.7.0
+sentence-transformers==2.3.1
+psycopg2-binary==2.9.9
+redis==5.0.1
+anthropic==0.18.0
+sse-starlette==1.8.2

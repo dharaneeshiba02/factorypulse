@@ -1,86 +1,31 @@
-# Byte-compiled / optimized / DLL files
+﻿# Python
 __pycache__/
 *.py[cod]
 *$py.class
-
-# C extensions
-*.so
-
-# Distribution / packaging
-.Python
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-share/python-wheels/
 *.egg-info/
-.installed.cfg
-*.egg
-MANIFEST
-
-# Virtual environments
+dist/
+build/
+.venv/
 venv/
-env/
+# Data (DVC-tracked)
+data/raw/
+data/processed/
+*.h5
+*.pt
+*.onnx
+*.pkl
+# Environment
 .env
-.venv
-ENV/
-env.bak/
-venv.bak/
-
-# Environment variables
-.env
-.env.local
-
-# pytest
-.pytest_cache/
-
-# mypy
-.mypy_cache/
-.dmypy.json
-dmypy.json
-
-# Ruff / black
-.ruff_cache/
-.pytest_cache/
-.coverage
-coverage.xml
-htmlcov/
-
-# Editors and operating systems
+*.log
+# IDE
 .vscode/
 .idea/
 *.swp
 *.swo
+# Docker
+docker-compose.override.yml
+# OS
 .DS_Store
 Thumbs.db
-
-# DVC
-/data/raw/*
-!/data/raw/*.dvc
-!/data/raw/*/
-/data/raw/*/**
-!/data/raw/*/.gitignore
-/data/interim/*
-/data/processed/*
-/data/featured/*
-!/data/raw/.gitkeep
-!/data/interim/.gitkeep
-!/data/processed/.gitkeep
-!/data/featured/.gitkeep
-!/data/interim/.gitignore
-!/data/processed/.gitignore
-!/data/featured/.gitignore
-.dvc/config.local
-.dvc-storage/
-
-# Logs and temporary output
-*.log
+# DVC temp
 /tmp/

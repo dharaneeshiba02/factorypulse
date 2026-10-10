@@ -1,64 +1,53 @@
-PYTHON ?= python
-COMPOSE ?= docker compose
+.PHONY: up down seed test-unit test-integration test lint demo clean infra
 
-.PHONY: setup infra up down clean build seed datasets dvc-status train lint \
-	test test-unit test-integration test-api demo simulator
-
-# Install local helper dependencies used by dataset and database seed scripts.
-setup:
-	$(PYTHON) -m pip install -r scripts/requirements.txt
-
-# Start the M1 infrastructure and wait for its health checks.
+# Start infrastructure only
 infra:
-	$(COMPOSE) up -d --wait timescaledb redis qdrant mosquitto mlflow
+	docker compose up -d timescaledb redis qdrant mosquitto mlflow
+	@echo "Waiting for services..."
+	@sleep 10
+	@echo "Infrastructure ready."
 
-up: infra
-
-# Replay the prepared dataset through the MQTT broker in the Compose network.
-simulator:
-	$(COMPOSE) --profile demo run --rm simulator
+# Start all services
+up:
+	docker compose up -d --build
+	@echo "All services starting..."
 
 down:
-	$(COMPOSE) down
+	docker compose down
 
-# Stop the local stack. Named volumes are kept intact.
-clean: down
-
-# Build each application image from its service directory.
-build:
-	docker build -f services/simulator/Dockerfile -t factorypulse-simulator:dev services/simulator
-	docker build -f services/ingestion/Dockerfile -t factorypulse-ingestion:dev services/ingestion
-	docker build -f services/inference/Dockerfile -t factorypulse-inference:dev services/inference
-	docker build -f services/copilot/Dockerfile -t factorypulse-copilot:dev services/copilot
-	docker build -f services/console/Dockerfile -t factorypulse-console:dev services/console
-
+# Seed database with demo data
 seed:
-	$(PYTHON) db/seed/seed_assets.py
+	python scripts/seed_db.py
 
-datasets:
-	$(PYTHON) scripts/download_datasets.py
-
-dvc-status:
-	dvc status
-
-train:
-	dvc repro
-
-lint:
-	ruff check ml/src services tests scripts db/seed
-
+# Run test pyramid
 test-unit:
-	$(PYTHON) -m pytest tests/unit -q
+	cd ml && python -m pytest ../tests/unit/ -v
 
 test-integration:
-	$(PYTHON) -m pytest tests/integration -q
+	python -m pytest tests/integration/ -v
 
 test-api:
-	$(PYTHON) -m pytest tests/api -q
+	python -m pytest tests/api/ -v
 
 test: test-unit test-integration test-api
 
-# M1 demo target prepares infrastructure and seed records. Application
-# containers and the interactive demo arrive in later milestones.
-demo: infra seed
-	@echo "FactoryPulse M1 infrastructure and seed data are ready."
+# Lint
+lint:
+	ruff check ml/ services/ tests/
+	mypy ml/src/ --ignore-missing-imports
+
+# Full demo: infra + seed + services
+demo: infra seed up
+	@echo ""
+	@echo "=== FactoryPulse Demo Ready ==="
+	@echo "Console: http://localhost:8501"
+	@echo "MLflow: http://localhost:5000"
+	@echo "API Docs: http://localhost:8001/docs"
+	@echo "Qdrant: http://localhost:6333/dashboard"
+	@echo "==============================="
+
+# Cleanup everything
+clean:
+	docker compose down -v
+	rm -rf data/processed/*
+	find . -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null || true
