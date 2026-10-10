@@ -7,14 +7,12 @@
 
 ## Project status
 
-| Milestone | Focus                           |   Status    |
-| :-------- | :------------------------------ | :---------: |
-| **M1**    | Foundations and data engineering |  Complete  |
-| **M2**    | Ingestion and storage           |  Complete  |
-| **M3**    | Core machine learning           | Not started |
-| **M4**    | Serving and alerting            | Not started |
-| **M5**    | GenAI maintenance copilot       | Not started |
-| **M6**    | MLOps hardening and demo        | Not started |
+- **M1** — Foundations and data engineering — Complete
+- **M2** — Ingestion and storage — Complete
+- **M3** — Core machine learning — Not started
+- **M4** — Serving and alerting — Not started
+- **M5** — GenAI maintenance copilot — Not started
+- **M6** — MLOps hardening and demo — Not started
 
 **Status key:** `Not started` -> `In progress` -> `Complete`  
 Update the status in this table as work progresses. Mark a milestone complete
@@ -245,10 +243,11 @@ been evaluated and reported.
 
 ## Decision and progress log
 
-| Date | Milestone | Update, decision, or blocker | Evidence / link |
-| :--- | :-------- | :--------------------------- | :-------------- |
-| 2026-10-10 | M2 | Completed ingestion, registry, telemetry storage, dead-lettering, feature persistence/cache, and health/readiness integration. | Compose config and migration succeeded; HTTP acceptance flow stored 8 readings/224 features and dead-lettered one invalid reading; MQTT replay stored 6,111 readings/171,108 features with zero replay rejects; `/api/v1/health` reported DB, Redis, and MQTT connected. |
-|      |           |                              |                 |
+- 2026-10-10 — M2 — Ingestion and telemetry path complete.
+  - Evidence: Compose config and migration succeeded; HTTP ingestion stored
+    8 readings and 224 feature rows; MQTT replay stored 6,111 readings and
+    171,108 feature rows with zero rejects; `/api/v1/health` reported DB,
+    Redis, and MQTT connected.
 
 ## Project completion
 
